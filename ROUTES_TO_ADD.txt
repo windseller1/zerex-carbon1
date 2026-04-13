@@ -1,0 +1,23 @@
+/**
+ * ZEREX CARBON - Routes Registration
+ * Add this to server.js before startServer()
+ */
+
+// ===== ROUTES REGISTRATION =====
+// Add these lines in server.js around line 740
+
+/*
+app.use('/api/auth', authRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/market', marketRoutes);
+app.use('/api/futures', futuresRoutes); // NEW: Carbon Futures
+app.use('/api/project-owner', projectOwnerRoutes); // NEW: Project Owner Dashboard
+app.use('/api/wallet', walletRoutes); // NEW: Advanced Wallet (Crypto/Fiat)
+
+
+*/
+
+// ===== END ROUTES =====

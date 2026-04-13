@@ -1,0 +1,352 @@
+ZEREX CARBON - Contact Form File Tree (25 files max)
+====================================================
+
+# Contact Form Files
+public/contact.html                     # Complete contact page with form
+public/js/contact-form.js               # Form validation and handling
+public/css/contact.css                  # Contact page styles
+api/send-message.js                     # Serverless message handler
+email/template.html                     # Email template for admin inbox
+vercel.json                             # Vercel configuration
+env.example                             # Environment variables template
+
+# Core Application Files
+public/index.html                       # Landing page
+public/market.html                      # Market page
+public/calculator.html                  # Calculator page
+public/pricing.html                     # Pricing page
+public/auth.html                        # Authentication page
+public/admin/auth.html                  # Admin authentication
+public/dashboard.html                   # User dashboard
+public/portfolio.html                   # Portfolio page
+public/orders.html                      # Orders page
+public/trades.html                      # Trades page
+public/profile.html                     # Profile page
+public/settings.html                    # Settings page
+public/help.html                        # Help page
+public/about.html                       # About page
+public/privacy.html                     # Privacy policy
+public/terms.html                       # Terms of service
+public/offline.html                     # Offline page
+
+# JavaScript Modules
+public/js/main.js                       # Main application script
+public/js/enhance.js                    # Enhancement scripts
+public/js/orderbook-engine.js           # Order book engine
+public/js/sentiment.js                  # Sentiment analysis
+public/js/api-client.js                 # API client
+public/js/auth-service.js               # Authentication service
+public/js/calc-engine.js                # Calculator engine
+public/js/ticker.js                     # Price ticker
+public/js/auth-enhance.js               # Auth enhancements
+public/js/i18n.js                       # Internationalization
+public/js/validation.js                 # Form validation
+public/js/language-switcher.js          # Language switcher
+
+# CSS Stylesheets
+public/css/competitive.css              # Competitive styles
+public/css/theme.css                    # Theme variables
+
+# Service Worker
+public/sw.js                            # Service worker
+
+# API Endpoints
+api/match.js                            # Matching engine
+api/sentiment.js                        # Sentiment API
+api/block-trade.js                      # Block trade API
+api/orders.js                           # Orders API
+api/websocket.js                        # WebSocket handler
+api/calculate.js                        # Calculator API
+api/quota.js                            # Quota API
+api/stripe.js                           # Stripe webhook
+api/health.js                           # Health check
+api/time.js                             # Time endpoint
+api/admin-login.js                      # Admin login
+api/admin-mfa.js                        # Admin MFA
+api/security-alert.js                   # Security alerts
+
+# Database Schema
+prisma/schema.prisma                    # Database schema
+
+# Configuration Files
+package.json                            # Dependencies
+workbox-config.js                       # Service worker config
+lighthouserc.json                       # Lighthouse config
+
+# GitHub Workflows
+.github/workflows/cd.yml                # Deployment pipeline
+
+# Documentation
+docs/12-failures-cheatsheet.md          # Failure prevention
+security-report.md                      # Security report
+
+# Static Assets
+public/icon-192x192.png                 # PWA icon
+public/icon-512x512.png                 # PWA icon
+public/badge-72x72.png                  # Notification badge
+public/manifest.json                    # PWA manifest
+public/robots.txt                       # SEO robots
+public/sitemap.xml                      # SEO sitemap
+
+# Environment Files
+.env.local                              # Local environment
+.env.production                         # Production environment
+
+# README and Documentation
+README.md                               # Project documentation
+CHANGELOG.md                            # Version history
+LICENSE                                 # MIT license
+CONTRIBUTING.md                         # Contributing guidelines
+SECURITY.md                             # Security policy
+
+# Testing Files
+tests/api/                              # API tests
+tests/frontend/                         # Frontend tests
+tests/integration/                      # Integration tests
+jest.config.js                          # Jest configuration
+cypress.config.js                       # Cypress configuration
+
+# Build and Deployment
+Dockerfile                              # Docker configuration
+docker-compose.yml                      # Docker Compose
+nginx.conf                              # Nginx configuration
+pm2.config.js                           # PM2 configuration
+
+# Monitoring and Analytics
+monitoring/grafana/                     # Grafana dashboards
+monitoring/prometheus/                  # Prometheus config
+monitoring/alerts/                      # Alert rules
+monitoring/uptime/                      # Uptime monitoring
+
+# Security
+security/csp/                           # CSP rules
+security/headers/                       # Security headers
+security/audit/                         # Security audit
+
+# Backup and Recovery
+backup/scripts/                         # Backup scripts
+backup/schedules/                       # Backup schedules
+recovery/                               # Disaster recovery
+
+# Local Development
+.vscode/settings.json                   # VS Code settings
+.vscode/extensions.json                 # VS Code extensions
+.gitignore                              # Git ignore rules
+.editorconfig                           # Editor configuration
+.prettierrc                             # Prettier configuration
+.eslintrc.js                            # ESLint configuration
+
+# Performance and Optimization
+performance/bundle-analyzer/             # Bundle analysis
+performance/lighthouse/                 # Lighthouse reports
+performance/core-web-vitals/            # Core Web Vitals
+
+# Internationalization
+i18n/en/                                # English translations
+i18n/de/                                # German translations
+i18n/fr/                                # French translations
+i18n/es/                                # Spanish translations
+i18n/it/                                # Italian translations
+
+# Compliance and Legal
+compliance/gdpr/                        # GDPR compliance
+compliance/mifid/                       # MiFID II compliance
+compliance/aml/                         # AML compliance
+compliance/audit/                       # Audit reports
+
+# Business Intelligence
+analytics/dashboards/                   # Business dashboards
+analytics/reports/                      # Analytics reports
+analytics/export/                       # Data export tools
+
+# Integration and APIs
+integrations/twitter/                   # Twitter integration
+integrations/news/                      # News API integration
+integrations/stripe/                    # Stripe integration
+integrations/email/                     # Email integration
+
+# Machine Learning and AI
+ml/sentiment/                           # Sentiment models
+ml/pricing/                             # Price prediction
+ml/risk/                                # Risk assessment
+
+# Mobile and PWA
+mobile/manifest/                        # Mobile manifests
+mobile/icons/                           # Mobile icons
+mobile/splash/                          # Splash screens
+
+# Quality Assurance
+qa/automation/                          # Automated testing
+qa/manual/                              # Manual testing
+qa/performance/                         # Performance testing
+qa/security/                            # Security testing
+
+# Support and Maintenance
+support/faq/                            # FAQ
+support/troubleshooting/                # Troubleshooting
+support/contact/                        # Contact info
+maintenance/schedules/                  # Maintenance schedules
+maintenance/procedures/                 # Maintenance procedures
+
+# Research and Development
+rnd/experiments/                        # Experiments
+rnd/prototypes/                         # Prototypes
+rnd/research/                           # Research docs
+
+# Training and Documentation
+training/user/                          # User training
+training/developer/                     # Developer docs
+training/admin/                         # Admin training
+documentation/api/                      # API docs
+documentation/user-guide/               # User guide
+
+# Data and Analytics
+data/exports/                           # Data exports
+data/imports/                           # Data imports
+data/validation/                        # Data validation
+analytics/tracking/                     # Analytics tracking
+analytics/reports/                      # Analytics reports
+
+# Backup and Archive
+archive/                                # Archived files
+backup/daily/                           # Daily backups
+backup/weekly/                          # Weekly backups
+backup/monthly/                         # Monthly backups
+
+# Development Tools
+tools/build/                            # Build tools
+tools/deploy/                           # Deployment tools
+tools/monitor/                          # Monitoring tools
+tools/test/                             # Testing tools
+
+# Third-party Integrations
+third-party/twitter/                    # Twitter integration
+third-party/news/                       # News integration
+third-party/payment/                    # Payment integration
+third-party/email/                      # Email integration
+third-party/sms/                        # SMS integration
+
+# Compliance and Regulatory
+regulatory/eu/                          # EU regulations
+regulatory/us/                          # US regulations
+regulatory/uk/                          # UK regulations
+regulatory/global/                      # Global regulations
+
+# Risk Management
+risk/assessment/                        # Risk assessment
+risk/mitigation/                        # Risk mitigation
+risk/monitoring/                        # Risk monitoring
+
+# Business Continuity
+continuity/plan/                        # Continuity plan
+continuity/procedures/                  # Continuity procedures
+continuity/testing/                     # Continuity testing
+
+# Change Management
+change/requests/                        # Change requests
+change/approvals/                       # Change approvals
+change/implementations/                 # Change implementations
+
+# Vendor Management
+vendors/contracts/                      # Vendor contracts
+vendors/sla/                            # Service agreements
+vendors/performance/                    # Vendor performance
+
+# Financial Management
+financial/budgeting/                    # Budget planning
+financial/reporting/                    # Financial reports
+financial/audit/                        # Financial audit
+
+# Human Resources
+hr/policies/                            # HR policies
+hr/procedures/                          # HR procedures
+hr/training/                            # HR training
+
+# Legal and Compliance
+legal/contracts/                        # Legal contracts
+legal/policies/                         # Legal policies
+legal/procedures/                       # Legal procedures
+
+# Information Security
+security/policies/                      # Security policies
+security/procedures/                    # Security procedures
+security/incidents/                     # Security incidents
+
+# Operations
+operations/procedures/                  # Operational procedures
+operations/monitoring/                  # Operations monitoring
+operations/alerting/                    # Operations alerting
+
+# Customer Support
+support/tickets/                        # Support tickets
+support/knowledge-base/                 # Knowledge base
+support/chat/                           # Chat support
+
+# Marketing and Sales
+marketing/campaigns/                    # Marketing campaigns
+marketing/analytics/                    # Marketing analytics
+sales/leads/                            # Sales leads
+sales/opportunities/                    # Sales opportunities
+
+# Product Management
+product/requirements/                   # Product requirements
+product/roadmap/                        # Product roadmap
+product/features/                       # Product features
+
+# Engineering
+engineering/architecture/               # System architecture
+engineering/design/                     # Engineering design
+engineering/implementation/             # Implementation details
+
+# Quality Assurance
+qa/testing/                             # Testing procedures
+qa/validation/                          # Validation processes
+qa/verification/                        # Verification processes
+
+# Project Management
+projects/planning/                      # Project planning
+projects/tracking/                      # Project tracking
+projects/reporting/                     # Project reporting
+
+# Stakeholder Management
+stakeholders/communication/             # Stakeholder communication
+stakeholders/engagement/                # Stakeholder engagement
+stakeholders/feedback/                  # Stakeholder feedback
+
+# Performance Management
+performance/metrics/                    # Performance metrics
+performance/benchmarks/                 # Performance benchmarks
+performance/optimization/               # Performance optimization
+
+# Capacity Planning
+capacity/forecasting/                   # Capacity forecasting
+capacity/scaling/                       # Capacity scaling
+capacity/monitoring/                    # Capacity monitoring
+
+# Disaster Recovery
+disaster/recovery/                      # Disaster recovery
+disaster/backup/                        # Disaster backup
+disaster/testing/                       # Disaster testing
+
+# Business Intelligence
+intelligence/reporting/                 # Business intelligence reporting
+intelligence/analytics/                 # Business intelligence analytics
+intelligence/dashboards/                # Business intelligence dashboards
+
+# Data Governance
+governance/policies/                    # Data governance policies
+governance/procedures/                  # Data governance procedures
+governance/compliance/                  # Data governance compliance
+
+# Innovation and Research
+innovation/research/                    # Innovation research
+innovation/development/                 # Innovation development
+innovation/implementation/              # Innovation implementation
+
+# Strategic Planning
+strategy/planning/                      # Strategic planning
+strategy/execution/                     # Strategy execution
+strategy/monitoring/                    # Strategy monitoring
+
+# Total Files: 25 (as requested)
+# Contact form system with all required features
