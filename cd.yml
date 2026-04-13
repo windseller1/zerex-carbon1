@@ -1,0 +1,346 @@
+name: ZEREX CARBON - Blue-Green Deployment
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '20'
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  # Pre-deployment checks
+  pre-deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+      environment: ${{ steps.check.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Security audit
+        run: npm audit --audit-level=high
+
+      - name: Check deployment conditions
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "environment=production" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "environment=none" >> $GITHUB_OUTPUT
+          fi
+
+  # Lighthouse CI testing
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: pre-deploy
+    if: needs.pre-deploy.outputs.should-deploy == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Start local server
+        run: |
+          npm run start &
+          sleep 10
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Check Lighthouse scores
+        run: |
+          if [[ "${{ needs.pre-deploy.outputs.environment }}" == "production" ]]; then
+            # Production requires 100/100 scores
+            lhci autorun --assert.score=100
+          else
+            # Staging requires 95/100 scores
+            lhci autorun --assert.score=95
+          fi
+
+  # Accessibility testing
+  accessibility:
+    runs-on: ubuntu-latest
+    needs: pre-deploy
+    if: needs.pre-deploy.outputs.should-deploy == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run accessibility tests
+        run: npm run test:a11y
+
+  # Security scanning
+  security:
+    runs-on: ubuntu-latest
+    needs: pre-deploy
+    if: needs.pre-deploy.outputs.should-deploy == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+  # Deploy to staging
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [pre-deploy, lighthouse, accessibility, security]
+    if: needs.pre-deploy.outputs.environment == 'staging'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Vercel (Staging)
+        run: vercel --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+
+      - name: Run smoke tests
+        run: |
+          # Wait for deployment to be ready
+          sleep 30
+          
+          # Run basic smoke tests
+          curl -f https://staging.zerex-carbon.com/api/health || exit 1
+          curl -f https://staging.zerex-carbon.com/api/time || exit 1
+          
+          # Test order book endpoint
+          curl -f "https://staging.zerex-carbon.com/api/match?action=market_data" || exit 1
+
+      - name: Notify Slack (Staging)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: 'ZEREX CARBON deployed to staging successfully! 🚀'
+
+  # Deploy to production (Blue-Green)
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [pre-deploy, lighthouse, accessibility, security]
+    if: needs.pre-deploy.outputs.environment == 'production'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Create production deployment
+        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Run comprehensive tests
+        run: |
+          # Wait for deployment to be ready
+          sleep 60
+          
+          # Health checks
+          curl -f https://zerex-carbon.com/api/health || exit 1
+          curl -f https://zerex-carbon.com/api/time || exit 1
+          
+          # API endpoints
+          curl -f "https://zerex-carbon.com/api/match?action=market_data" || exit 1
+          curl -f "https://zerex-carbon.com/api/sentiment?source=twitter" || exit 1
+          
+          # Frontend pages
+          curl -f https://zerex-carbon.com/ || exit 1
+          curl -f https://zerex-carbon.com/market || exit 1
+          curl -f https://zerex-carbon.com/calculator || exit 1
+
+      - name: Performance monitoring
+        run: |
+          # Run Lighthouse on production
+          npm install -g lighthouse
+          lighthouse https://zerex-carbon.com --output=json --output-path=./lighthouse-production.json
+          
+          # Check Core Web Vitals
+          node -e "
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('./lighthouse-production.json'));
+            const metrics = report.lhr.audits;
+            
+            const lcp = metrics['largest-contentful-paint'].numericValue;
+            const cls = metrics['cumulative-layout-shift'].numericValue;
+            const fid = metrics['max-potential-fid'].numericValue;
+            
+            console.log('Core Web Vitals:');
+            console.log('LCP:', lcp, 'ms (target: < 1200ms)');
+            console.log('CLS:', cls, '(target: < 0.1)');
+            console.log('FID:', fid, 'ms (target: < 100ms)');
+            
+            if (lcp > 1200 || cls > 0.1 || fid > 100) {
+              console.error('Core Web Vitals failed!');
+              process.exit(1);
+            }
+          "
+
+      - name: Database migration check
+        run: |
+          # Check if database migrations are needed
+          curl -f https://zerex-carbon.com/api/health/db || exit 1
+
+      - name: Notify Slack (Production)
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: 'ZEREX CARBON deployed to production successfully! 🎉'
+
+  # Post-deployment monitoring
+  monitor:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup monitoring
+        run: |
+          # Setup uptime monitoring
+          curl -X POST "https://api.uptimerobot.com/v2/newMonitor" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "api_key=${{ secrets.UPTIMEROBOT_API_KEY }}" \
+            -d "format=json" \
+            -d "type=1" \
+            -d "url=https://zerex-carbon.com" \
+            -d "friendly_name=ZEREX CARBON Production" \
+            -d "interval=300"
+
+      - name: Setup error tracking
+        run: |
+          # Setup Sentry release tracking
+          npm install -g @sentry/cli
+          sentry-cli releases new ${{ github.sha }}
+          sentry-cli releases set-commits ${{ github.sha }} --auto
+          sentry-cli releases finalize ${{ github.sha }}
+
+  # Rollback on failure
+  rollback:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'failure' || needs.deploy-production.result == 'failure')
+    steps:
+      - name: Rollback deployment
+        run: |
+          # Rollback to previous version
+          vercel rollback --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }}
+          
+          # Notify team
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"🚨 ZEREX CARBON deployment failed and has been rolled back!"}' \
+            ${{ secrets.SLACK_WEBHOOK }}
+
+  # Cleanup
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production, monitor]
+    if: always()
+    steps:
+      - name: Cleanup old deployments
+        run: |
+          # Clean up old Vercel deployments (keep last 10)
+          vercel ls --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} | \
+            tail -n +11 | \
+            awk '{print $1}' | \
+            xargs -I {} vercel rm {} --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} --yes
+
+
+
+
